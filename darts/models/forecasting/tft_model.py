@@ -324,6 +324,11 @@ class _TFTModule(PLMixedCovariatesModule):
         )
 
         self.output_layer = nn.Linear(self.hidden_size, self.n_targets * self.loss_size)
+        
+        # RSD added this 2023-05-30
+        self._encoder_sparse_weights = None
+        self._decoder_sparse_weights = None
+        self._attn_out_weights = None
 
     @property
     def reals(self) -> List[str]:
@@ -645,6 +650,11 @@ class _TFTModule(PLMixedCovariatesModule):
         #     encoder_lengths=encoder_lengths,
         # )
 
+        # RSD added this 2023-05-30
+        self._encoder_sparse_weights = encoder_sparse_weights
+        self._decoder_sparse_weights = decoder_sparse_weights
+        self._attn_out_weights = attn_out_weights
+        
         return out
 
 
