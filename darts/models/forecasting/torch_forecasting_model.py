@@ -1797,13 +1797,13 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
                 ):
                     param_value = [param_value] * len(ckpt_hyper_params[param_key])
 
-                # raise_if(
-                #     param_value != ckpt_hyper_params[param_key],
-                #     f"The values of the hyper parameter {param_key} should be identical between "
-                #     f"the instantiated model ({param_value}) and the loaded checkpoint "
-                #     f"({ckpt_hyper_params[param_key]}). Please adjust the model accordingly.",
-                #     logger,
-                # )
+                raise_if(
+                    param_value != ckpt_hyper_params[param_key],
+                    f"The values of the hyper parameter {param_key} should be identical between "
+                    f"the instantiated model ({param_value}) and the loaded checkpoint "
+                    f"({ckpt_hyper_params[param_key]}). Please adjust the model accordingly.",
+                    logger,
+                )
 
         # indicate to the user than checkpoints generated with darts <= 0.23.1 are not supported
         raise_if_not(
