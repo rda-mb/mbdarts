@@ -329,6 +329,10 @@ class _TFTModule(PLMixedCovariatesModule):
         self._encoder_sparse_weights = None
         self._decoder_sparse_weights = None
         self._attn_out_weights = None
+        
+        # RSD 2023-06-27 - Initialize the weights history
+        self.encoder_importance_history = []
+        self.decoder_importance_history = []
 
     @property
     def reals(self) -> List[str]:
@@ -654,6 +658,13 @@ class _TFTModule(PLMixedCovariatesModule):
         self._encoder_sparse_weights = encoder_sparse_weights
         self._decoder_sparse_weights = decoder_sparse_weights
         self._attn_out_weights = attn_out_weights
+        
+        # RSD 2023-06-17
+        if self.predicting:
+            encoder_importance = encoder_sparse_weights.cpu().detach().numpy()
+            self.encoder_importance_history.append(encoder_importance)
+            decoder_importance = decoder_sparse_weights.cpu().detach().numpy()
+            self.decoder_importance_history.append(decoder_importance)
         
         return out
 

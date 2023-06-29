@@ -126,6 +126,9 @@ class PLForecastingModule(pl.LightningModule, ABC):
         self.pred_roll_size: Optional[int] = None
         self.pred_batch_size: Optional[int] = None
         self.pred_n_jobs: Optional[int] = None
+        
+        # RSD 2023-06-27 - to keep track if predicting or not, to be used in forward()
+        self.predicting = False
 
     @property
     def first_prediction_index(self) -> int:
@@ -183,6 +186,7 @@ class PLForecastingModule(pl.LightningModule, ABC):
         dataloader_idx
             the dataloader index
         """
+        self.predicting = True
         input_data_tuple, batch_input_series = batch[:-1], batch[-1]
 
         # number of individual series to be predicted in current batch
@@ -243,6 +247,7 @@ class PLForecastingModule(pl.LightningModule, ABC):
             )
             for batch_idx, input_series in enumerate(batch_input_series)
         )
+        self.predicting = False
         return ts_forecasts
 
     def set_predict_parameters(
