@@ -174,9 +174,12 @@ class _TFTModule(PLMixedCovariatesModule):
             name: self.input_embeddings.output_size[name]
             for name in self.categorical_static_variables
         }
-        static_input_sizes.update({
-            name: self.hidden_continuous_size for name in self.numeric_static_variables
-        })
+        static_input_sizes.update(
+            {
+                name: self.hidden_continuous_size
+                for name in self.numeric_static_variables
+            }
+        )
 
         self.static_covariates_vsn = _VariableSelectionNetwork(
             input_sizes=static_input_sizes,
@@ -331,6 +334,9 @@ class _TFTModule(PLMixedCovariatesModule):
         self._static_covariate_var = None
         self._encoder_sparse_weights = None
         self._decoder_sparse_weights = None
+        # RSD 2025-04-04
+        self.encoder_sparse_weights_list = []
+        self.decoder_sparse_weights_list = []
 
     @property
     def reals(self) -> list[str]:
@@ -541,11 +547,13 @@ class _TFTModule(PLMixedCovariatesModule):
             else:
                 static_embedding = {}
             # add numerical static covariates
-            static_embedding.update({
-                name: x_static[:, :, idx]
-                for idx, name in enumerate(self.static_variables)
-                if name in self.numeric_static_variables
-            })
+            static_embedding.update(
+                {
+                    name: x_static[:, :, idx]
+                    for idx, name in enumerate(self.static_variables)
+                    if name in self.numeric_static_variables
+                }
+            )
             static_embedding, static_covariate_var = self.static_covariates_vsn(
                 static_embedding
             )
@@ -576,6 +584,15 @@ class _TFTModule(PLMixedCovariatesModule):
             x=embeddings_varying_decoder,
             context=static_context_expanded[:, encoder_length:],
         )
+
+        # RSD 2025-04-04
+        if not self.training:
+            self.encoder_sparse_weights_list.append(
+                encoder_sparse_weights.cpu().detach().numpy()
+            )
+            self.decoder_sparse_weights_list.append(
+                decoder_sparse_weights.cpu().detach().numpy()
+            )
 
         # LSTM
         # calculate initial state
@@ -1083,9 +1100,9 @@ class TFTModel(MixedCovariatesTorchModel):
                     if (
                         self.static_covariates is None
                     ):  # when training with fit_from_dataset
-                        static_cols = pd.Index([
-                            i for i in range(static_covariates.shape[1])
-                        ])
+                        static_cols = pd.Index(
+                            [i for i in range(static_covariates.shape[1])]
+                        )
                     else:
                         static_cols = self.static_covariates.columns
                     numeric_mask = ~static_cols.isin(self.categorical_embedding_sizes)
