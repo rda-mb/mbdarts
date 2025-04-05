@@ -587,12 +587,10 @@ class _TFTModule(PLMixedCovariatesModule):
 
         # RSD 2025-04-04
         if not self.training:
-            self.encoder_sparse_weights_list.append(
-                encoder_sparse_weights.cpu().detach().numpy()
-            )
-            self.decoder_sparse_weights_list.append(
-                decoder_sparse_weights.cpu().detach().numpy()
-            )
+            encoder_weights = encoder_sparse_weights.cpu().detach().numpy()
+            self.encoder_sparse_weights_list.append(encoder_weights)
+            decoder_weights = decoder_sparse_weights.cpu().detach().numpy()
+            self.decoder_sparse_weights_list.append(decoder_weights)
 
         # LSTM
         # calculate initial state
